@@ -4,7 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -30,6 +34,7 @@ import com.fredhappyface.fhcode.languagerules.Ruby
 import com.fredhappyface.fhcode.languagerules.Swift
 import com.fredhappyface.fhcode.languagerules.XML
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
@@ -49,6 +54,8 @@ class ActivityMain : ActivityThemable() {
 	private var currentTextSize = 0
 	private var uri: String? = null
 	private var languageID = "java"
+	private var isModified = false
+	private var textWatcher: TextWatcher? = null
 
 	/**
 	 * Override the onCreate method from ActivityThemable adding the activity_main view and configuring
@@ -63,6 +70,7 @@ class ActivityMain : ActivityThemable() {
 		// Get saved state
 		this.uri = savedInstanceState?.getString("_uri", null)
 		this.languageID = savedInstanceState?.getString("_languageID", "java").toString()
+		this.isModified = savedInstanceState?.getBoolean("_isModified", false) ?: false
 		// Set up correct colour
 		var colours: Colours = ColoursDark()
 		if (this.currentTheme == 0) {
@@ -113,6 +121,18 @@ class ActivityMain : ActivityThemable() {
 		if (this.currentTextSize != textSize) {
 			this.currentTextSize = textSize
 			recreate()
+		}
+
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		if (textWatcher == null) {
+			textWatcher = object : TextWatcher {
+				override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+				override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+				override fun afterTextChanged(s: Editable?) {
+					isModified = true
+				}
+			}
+			codeEditText.addTextChangedListener(textWatcher)
 		}
 	}
 
@@ -177,6 +197,7 @@ class ActivityMain : ActivityThemable() {
 		super.onSaveInstanceState(outState)
 		outState.putString("_languageID", this.languageID)
 		outState.putString("_uri", this.uri)
+		outState.putBoolean("_isModified", this.isModified)
 	}
 
 	/**
@@ -213,6 +234,7 @@ class ActivityMain : ActivityThemable() {
 			AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_saved_button)
 		) { dialog, _ ->
 			dialog.dismiss()
+			this.isModified = false
 			recreate()
 		}
 		alertDialog.show()
@@ -223,24 +245,45 @@ class ActivityMain : ActivityThemable() {
 	 *
 	 */
 	private fun doNewFile() {
-		val alertDialog: AlertDialog = AlertDialog.Builder(this, R.style.DialogTheme).create()
-		alertDialog.setTitle(getString(R.string.dialog_new_title))
-		// Cancel/ No - Do nothing
-		alertDialog.setButton(
-			AlertDialog.BUTTON_NEGATIVE, getString(R.string.dialog_new_cancel)
-		) { dialog, _ -> dialog.dismiss(); }
-		// Confirm/ Yes - Overwrite text, reset language id and uri and refresh
-		alertDialog.setButton(
-			AlertDialog.BUTTON_POSITIVE, getString(R.string.dialog_new_confirm)
-		) { dialog, _ ->
-			dialog.dismiss()
+		val createNewFile = {
 			val codeEditText: EditText = findViewById(R.id.codeHighlight)
 			codeEditText.setText(R.string.blank_file_text)
 			this.languageID = "java"
 			this.uri = null
+			this.isModified = false
 			recreate()
 		}
-		alertDialog.show()
+
+		if (isModified) {
+			val alertDialog: AlertDialog = AlertDialog.Builder(this, R.style.DialogTheme).create()
+			alertDialog.setTitle(getString(R.string.dialog_unsaved_title))
+			alertDialog.setMessage(getString(R.string.dialog_unsaved_message))
+			alertDialog.setButton(
+				AlertDialog.BUTTON_NEGATIVE, getString(R.string.dialog_unsaved_cancel)
+			) { dialog, _ -> dialog.dismiss() }
+			alertDialog.setButton(
+				AlertDialog.BUTTON_POSITIVE, getString(R.string.dialog_unsaved_confirm)
+			) { dialog, _ ->
+				dialog.dismiss()
+				createNewFile()
+			}
+			alertDialog.show()
+		} else {
+			val alertDialog: AlertDialog = AlertDialog.Builder(this, R.style.DialogTheme).create()
+			alertDialog.setTitle(getString(R.string.dialog_new_title))
+			// Cancel/ No - Do nothing
+			alertDialog.setButton(
+				AlertDialog.BUTTON_NEGATIVE, getString(R.string.dialog_new_cancel)
+			) { dialog, _ -> dialog.dismiss(); }
+			// Confirm/ Yes - Overwrite text, reset language id and uri and refresh
+			alertDialog.setButton(
+				AlertDialog.BUTTON_POSITIVE, getString(R.string.dialog_new_confirm)
+			) { dialog, _ ->
+				dialog.dismiss()
+				createNewFile()
+			}
+			alertDialog.show()
+		}
 	}
 
 	/**
@@ -266,19 +309,96 @@ class ActivityMain : ActivityThemable() {
 				this.languageID = getExtFromURI(Uri.parse(this.uri))
 				val codeEditText: EditText = findViewById(R.id.codeHighlight)
 				codeEditText.setText(readTextFromUri(Uri.parse(this.uri)))
+				this.isModified = false
 				recreate()
 			}
 		}
+
+	/**
+	 * Get the initial URI for the file picker
+	 *
+	 * @return Uri? - the initial URI
+	 */
+	private fun getInitialUri(): Uri? {
+		// Try to get Documents directory first (more user-accessible)
+		val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+		val hfcodeDir = File(documentsDir, "hfcode")
+
+		// Create directory if it doesn't exist
+		if (!hfcodeDir.exists()) {
+			if (!hfcodeDir.mkdirs()) {
+				// If Documents/hfcode fails, try app-specific external storage
+				val externalFilesDir = getExternalFilesDir(null) ?: return null
+				val appDir = File(externalFilesDir, "hfcode")
+				if (!appDir.exists()) {
+					if (!appDir.mkdirs()) {
+						return null
+					}
+				}
+				// Try to build URI for app-specific directory
+				return buildDocumentUri(appDir)
+			}
+		}
+
+		// Build URI for Documents/hfcode directory
+		return buildDocumentUri(hfcodeDir)
+	}
+
+	/**
+	 * Build a DocumentsContract URI from a File path
+	 *
+	 * @param dir File - the directory to build URI for
+	 * @return Uri? - the DocumentsContract URI or null if failed
+	 */
+	private fun buildDocumentUri(dir: File): Uri? {
+		try {
+			val externalStorageRoot = Environment.getExternalStorageDirectory()
+			val path = dir.absolutePath
+			if (path.startsWith(externalStorageRoot.absolutePath)) {
+				val relativePath = path.substring(externalStorageRoot.absolutePath.length)
+					.trim('/')
+				val documentId = "primary:$relativePath"
+				return DocumentsContract.buildDocumentUri(
+					"com.android.externalstorage.documents",
+					documentId
+				)
+			}
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+		return null
+	}
 
 	/**
 	 * Call this when the user clicks menu -> open
 	 *
 	 */
 	private fun startFileOpen() {
-		val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-		intent.addCategory(Intent.CATEGORY_OPENABLE)
-		intent.type = "*/*"
-		completeFileOpen.launch(intent)
+		val launchPicker = {
+			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+			intent.addCategory(Intent.CATEGORY_OPENABLE)
+			intent.type = "*/*"
+			getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
+			completeFileOpen.launch(intent)
+		}
+
+		if (isModified) {
+			val alertDialog: AlertDialog = AlertDialog.Builder(this, R.style.DialogTheme).create()
+			alertDialog.setTitle(getString(R.string.dialog_unsaved_title))
+			alertDialog.setMessage(getString(R.string.dialog_unsaved_message))
+			alertDialog.setButton(
+				AlertDialog.BUTTON_NEGATIVE, getString(R.string.dialog_unsaved_cancel)
+			) { dialog, _ -> dialog.dismiss() }
+			alertDialog.setButton(
+				AlertDialog.BUTTON_POSITIVE, getString(R.string.dialog_unsaved_confirm)
+			) { dialog, _ ->
+				dialog.dismiss()
+				launchPicker()
+			}
+			alertDialog.show()
+		} else {
+			launchPicker()
+		}
 	}
 
 	/**
@@ -302,6 +422,7 @@ class ActivityMain : ActivityThemable() {
 		val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 		intent.addCategory(Intent.CATEGORY_OPENABLE)
 		intent.type = "*/*"
+		getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
 		completeFileSaveAs.launch(intent)
 	}
 

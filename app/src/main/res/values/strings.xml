@@ -42,6 +42,10 @@
 	<string name="dialog_new_confirm">Yes</string>
 	<string name="dialog_new_cancel">No</string>
 	<string name="dialog_new_title">Create New File?</string>
+	<string name="dialog_unsaved_title">Unsaved Changes</string>
+	<string name="dialog_unsaved_message">You have unsaved changes. Are you sure you want to discard them?</string>
+	<string name="dialog_unsaved_confirm">Discard</string>
+	<string name="dialog_unsaved_cancel">Cancel</string>
 	<!-- Blank file text  -->
 	<string name="blank_file_text">[This is a blank file, open a file or edit this file and save]</string>
 	<!-- Strings for shortcuts.xml -->
