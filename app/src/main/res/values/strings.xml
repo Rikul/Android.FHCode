@@ -3,6 +3,7 @@
 	<!-- Strings for menu_main.xml -->
 	<string name="action_new_file">New File</string>
 	<string name="action_open">Open</string>
+	<string name="action_open_file">Open File</string>
 	<string name="action_save">Save</string>
 	<string name="action_save_as">Save As</string>
 	<string name="action_about">About</string>

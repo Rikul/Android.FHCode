@@ -109,6 +109,10 @@ class ActivityMain : ActivityThemable() {
 		this.currentTextSize = this.sharedPreferences.getInt("text", 18)
 		lineNumbersTextView.textSize = this.currentTextSize.toFloat()
 		codeEditText.textSize = this.currentTextSize.toFloat()
+
+		if (savedInstanceState == null && intent.getStringExtra("action") == "open") {
+			startFileOpen()
+		}
 	}
 
 	/**
@@ -373,7 +377,7 @@ class ActivityMain : ActivityThemable() {
 	 * Call this when the user clicks menu -> open
 	 *
 	 */
-	private fun startFileOpen() {
+	fun startFileOpen() {
 		val launchPicker = {
 			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
 			intent.addCategory(Intent.CATEGORY_OPENABLE)
