@@ -319,61 +319,6 @@ class ActivityMain : ActivityThemable() {
 		}
 
 	/**
-	 * Get the initial URI for the file picker
-	 *
-	 * @return Uri? - the initial URI
-	 */
-	private fun getInitialUri(): Uri? {
-		// Try to get Documents directory first (more user-accessible)
-		val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-		val hfcodeDir = File(documentsDir, "hfcode")
-
-		// Create directory if it doesn't exist
-		if (!hfcodeDir.exists()) {
-			if (!hfcodeDir.mkdirs()) {
-				// If Documents/hfcode fails, try app-specific external storage
-				val externalFilesDir = getExternalFilesDir(null) ?: return null
-				val appDir = File(externalFilesDir, "hfcode")
-				if (!appDir.exists()) {
-					if (!appDir.mkdirs()) {
-						return null
-					}
-				}
-				// Try to build URI for app-specific directory
-				return buildDocumentUri(appDir)
-			}
-		}
-
-		// Build URI for Documents/hfcode directory
-		return buildDocumentUri(hfcodeDir)
-	}
-
-	/**
-	 * Build a DocumentsContract URI from a File path
-	 *
-	 * @param dir File - the directory to build URI for
-	 * @return Uri? - the DocumentsContract URI or null if failed
-	 */
-	private fun buildDocumentUri(dir: File): Uri? {
-		try {
-			val externalStorageRoot = Environment.getExternalStorageDirectory()
-			val path = dir.absolutePath
-			if (path.startsWith(externalStorageRoot.absolutePath)) {
-				val relativePath = path.substring(externalStorageRoot.absolutePath.length)
-					.trim('/')
-				val documentId = "primary:$relativePath"
-				return DocumentsContract.buildDocumentUri(
-					"com.android.externalstorage.documents",
-					documentId
-				)
-			}
-		} catch (e: Exception) {
-			e.printStackTrace()
-		}
-		return null
-	}
-
-	/**
 	 * Call this when the user clicks menu -> open
 	 *
 	 */
@@ -382,7 +327,6 @@ class ActivityMain : ActivityThemable() {
 			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
 			intent.addCategory(Intent.CATEGORY_OPENABLE)
 			intent.type = "*/*"
-			getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
 			completeFileOpen.launch(intent)
 		}
 
@@ -426,7 +370,6 @@ class ActivityMain : ActivityThemable() {
 		val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 		intent.addCategory(Intent.CATEGORY_OPENABLE)
 		intent.type = "*/*"
-		getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
 		completeFileSaveAs.launch(intent)
 	}
 
