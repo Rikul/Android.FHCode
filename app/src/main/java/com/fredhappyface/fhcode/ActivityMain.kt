@@ -8,6 +8,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuInflater
@@ -71,6 +72,9 @@ class ActivityMain : ActivityThemable() {
 		this.uri = savedInstanceState?.getString("_uri", null)
 		this.languageID = savedInstanceState?.getString("_languageID", "java").toString()
 		this.isModified = savedInstanceState?.getBoolean("_isModified", false) ?: false
+		if (this.isModified) {
+			findViewById<TextView>(R.id.statusModified).text = "Modified"
+		}
 		// Set up correct colour
 		var colours: Colours = ColoursDark()
 		if (this.currentTheme == 0) {
@@ -94,10 +98,10 @@ class ActivityMain : ActivityThemable() {
 
 
 		val codeEditText: EditText = findViewById(R.id.codeHighlight)
-		val lineNumbersTextView: TextView = findViewById(R.id.lineNumbersTextView)
+		codeEditText.setOnClickListener { updateCursorPosition() }
+		codeEditText.setOnKeyListener { _, _, _ -> updateCursorPosition(); false }
 		val textHighlight = TextHighlight(
 			codeEditText,
-			lineNumbersTextView,
 			languageRules,
 			colours
 		)
@@ -107,7 +111,6 @@ class ActivityMain : ActivityThemable() {
 		// Apply text size
 		this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
 		this.currentTextSize = this.sharedPreferences.getInt("text", 18)
-		lineNumbersTextView.textSize = this.currentTextSize.toFloat()
 		codeEditText.textSize = this.currentTextSize.toFloat()
 
 		if (savedInstanceState == null && intent.getStringExtra("action") == "open") {
@@ -134,6 +137,8 @@ class ActivityMain : ActivityThemable() {
 				override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 				override fun afterTextChanged(s: Editable?) {
 					isModified = true
+					findViewById<TextView>(R.id.statusModified).text = "Modified"
+					updateCursorPosition()
 				}
 			}
 			codeEditText.addTextChangedListener(textWatcher)
@@ -178,6 +183,10 @@ class ActivityMain : ActivityThemable() {
 
 			R.id.action_save_as -> {
 				startFileSaveAs(); true
+			}
+
+			R.id.action_go_to_line -> {
+				doGoToLine(); true
 			}
 
 			R.id.action_settings -> {
@@ -242,6 +251,100 @@ class ActivityMain : ActivityThemable() {
 			recreate()
 		}
 		alertDialog.show()
+	}
+
+	/**
+	 * Update the cursor position in the status bar
+	 */
+	private fun updateCursorPosition() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val statusCursor: TextView = findViewById(R.id.statusCursor)
+		val pos = codeEditText.selectionStart
+		val layout = codeEditText.layout
+		if (layout != null) {
+			val line = layout.getLineForOffset(pos)
+			val col = pos - layout.getLineStart(line)
+			statusCursor.text = "Ln ${line + 1}, Col ${col + 1}"
+		}
+	}
+
+	/**
+	 * Show a dialog to go to a specific line
+	 */
+	private fun doGoToLine() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val input = EditText(this)
+		input.inputType = InputType.TYPE_CLASS_NUMBER
+		val alertDialog = AlertDialog.Builder(this, R.style.DialogTheme).create()
+		alertDialog.setTitle("Go to line")
+		alertDialog.setView(input)
+		alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Go") { dialog, _ ->
+			val line = input.text.toString().toIntOrNull()
+			if (line != null && line > 0 && line <= codeEditText.lineCount) {
+				val layout = codeEditText.layout
+				val pos = layout.getLineStart(line - 1)
+				codeEditText.setSelection(pos)
+			}
+			dialog.dismiss()
+		}
+		alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { dialog, _ -> dialog.dismiss() }
+		alertDialog.show()
+	}
+
+
+    /**
+	 * Get the initial URI for the file picker
+	 *
+	 * @return Uri? - the initial URI
+	 */
+	private fun getInitialUri(): Uri? {
+		// Try to get Documents directory first (more user-accessible)
+		val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+		val hfcodeDir = File(documentsDir, "hfcode")
+
+		// Create directory if it doesn't exist
+		if (!hfcodeDir.exists()) {
+			if (!hfcodeDir.mkdirs()) {
+				// If Documents/hfcode fails, try app-specific external storage
+				val externalFilesDir = getExternalFilesDir(null) ?: return null
+				val appDir = File(externalFilesDir, "hfcode")
+				if (!appDir.exists()) {
+					if (!appDir.mkdirs()) {
+						return null
+					}
+				}
+				// Try to build URI for app-specific directory
+				return buildDocumentUri(appDir)
+			}
+		}
+
+		// Build URI for Documents/hfcode directory
+		return buildDocumentUri(hfcodeDir)
+	}
+
+	/**
+	 * Build a DocumentsContract URI from a File path
+	 *
+	 * @param dir File - the directory to build URI for
+	 * @return Uri? - the DocumentsContract URI or null if failed
+	 */
+	private fun buildDocumentUri(dir: File): Uri? {
+		try {
+			val externalStorageRoot = Environment.getExternalStorageDirectory()
+			val path = dir.absolutePath
+			if (path.startsWith(externalStorageRoot.absolutePath)) {
+				val relativePath = path.substring(externalStorageRoot.absolutePath.length)
+					.trim('/')
+				val documentId = "primary:$relativePath"
+				return DocumentsContract.buildDocumentUri(
+					"com.android.externalstorage.documents",
+					documentId
+				)
+			}
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+		return null
 	}
 
 	/**
@@ -327,6 +430,12 @@ class ActivityMain : ActivityThemable() {
 			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
 			intent.addCategory(Intent.CATEGORY_OPENABLE)
 			intent.type = "*/*"
+            getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
+
+			//val uri = getInitialUri()
+			//if (uri != null) {
+			//	intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri)
+			//}
 			completeFileOpen.launch(intent)
 		}
 
@@ -362,14 +471,15 @@ class ActivityMain : ActivityThemable() {
 			}
 		}
 
-	/**
-	 * Call this when the user clicks menu -> save as
-	 *
-	 */
 	private fun startFileSaveAs() {
 		val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 		intent.addCategory(Intent.CATEGORY_OPENABLE)
 		intent.type = "*/*"
+        getInitialUri()?.let { intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, it) }
+		//val uri = getInitialUri()
+		//if (uri != null) {
+		//	intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri)
+		//}
 		completeFileSaveAs.launch(intent)
 	}
 

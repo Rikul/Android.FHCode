@@ -33,20 +33,10 @@ textHighlight.start()
  */
 open class TextHighlight(
 	targetEditText: EditText,
-	private var lineNumbersTextView: TextView,
 	languageRules: LanguageRules,
 	colours: Colours,
 	timeDelay: Long = 150
 ) {
-
-	// Function to generate line numbers
-	private fun generateLineNumbers(lineCount: Int): String {
-		val stringBuilder = StringBuilder()
-		for (i in 1..lineCount) {
-			stringBuilder.append("$i\n")
-		}
-		return stringBuilder.toString()
-	}
 
 	/**
 	 * Update the text
@@ -110,7 +100,6 @@ open class TextHighlight(
 		highlightTask?.cancel("Refresh Highlight")
 		highlightTask = null
 		highlightTask = CoroutineScope(Dispatchers.Main).launch {
-			lineNumbersTextView.text = generateLineNumbers(targetEditText.lineCount)
 			val currentText = editable.toString()
 			val highlightEntities = withContext(Dispatchers.Default) {
 				syntaxHighlighter.createHighlighting(currentText)

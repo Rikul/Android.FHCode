@@ -17,6 +17,10 @@
 		android:orderInCategory="100"
 		android:title="@string/action_save_as" />
 	<item
+		android:id="@+id/action_go_to_line"
+		android:orderInCategory="100"
+		android:title="Go to line" />
+	<item
 		android:id="@+id/action_settings"
 		android:orderInCategory="100"
 		android:title="@string/action_settings" />

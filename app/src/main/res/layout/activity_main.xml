@@ -4,46 +4,69 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<me.zhanghai.android.fastscroll.FastScrollNestedScrollView
-		android:id="@+id/nestedScrollView"
+	<RelativeLayout
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:scrollbars="vertical"
-		android:scrollbarAlwaysDrawVerticalTrack="true"
-		android:scrollbarSize="8dp"
-		android:scrollbarThumbVertical="?attr/foregroundColorSecondary"
-		app:layout_behavior="@string/appbar_scrolling_view_behavior">
+		android:layout_height="match_parent">
 
-
-	<!-- LinearLayout to contain line numbers and code -->
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="horizontal"
-		android:layout_margin="0dp"
-		android:padding="0dp">
-
-		<!-- Line numbers -->
-		<TextView
-			android:id="@+id/lineNumbersTextView"
-			android:layout_margin="0dp"
-			android:paddingHorizontal="4dp"
-			android:paddingTop="16dp"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:background="?attr/backgroundColorSecondary"
-			/>
-
-		<!-- Code EditText -->
-		<EditText
-			android:id="@+id/codeHighlight"
-			android:layout_margin="0dp"
-			android:padding="4dp"
+		<me.zhanghai.android.fastscroll.FastScrollNestedScrollView
+			android:id="@+id/nestedScrollView"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:background="@color/transparent"
+			android:layout_above="@+id/statusBar"
+			android:scrollbars="vertical"
+			android:scrollbarAlwaysDrawVerticalTrack="true"
+			android:scrollbarSize="8dp"
+			android:scrollbarThumbVertical="?attr/foregroundColorSecondary"
+			app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-			/>
-	</LinearLayout>
-	</me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+
+			<!-- LinearLayout to contain code -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:layout_margin="0dp"
+				android:padding="0dp">
+
+				<!-- Code EditText -->
+				<EditText
+					android:id="@+id/codeHighlight"
+					android:layout_margin="0dp"
+					android:padding="4dp"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:minHeight="500dp"
+					android:background="@color/transparent"
+					android:gravity="top|start"
+					android:inputType="textMultiLine|textNoSuggestions"
+					/>
+			</LinearLayout>
+		</me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+
+		<LinearLayout
+			android:id="@+id/statusBar"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true"
+			android:orientation="horizontal"
+			android:background="?attr/backgroundColorSecondary"
+			android:padding="4dp">
+
+			<TextView
+				android:id="@+id/statusModified"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text=""
+				/>
+
+			<TextView
+				android:id="@+id/statusCursor"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Ln 1, Col 1"
+				/>
+
+		</LinearLayout>
+	</RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
