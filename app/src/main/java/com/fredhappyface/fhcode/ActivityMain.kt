@@ -284,6 +284,7 @@ class ActivityMain : ActivityThemable() {
 				val layout = codeEditText.layout
 				val pos = layout.getLineStart(line - 1)
 				codeEditText.setSelection(pos)
+                updateCursorPosition()
 			}
 			dialog.dismiss()
 		}
