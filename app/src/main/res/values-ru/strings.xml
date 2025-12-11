@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">Чёрная</string>
     <string name="links_text">1-я. - Проект здесь: <a href="https://github.com/FredHappyface/Android.FHCode"> на Github</a>
 \n2-я. - Лицензия тут: <a href="https://github.com/FredHappyface/Android.FHCode"> на Github</a></string>
-    <string name="blank_file_text">[Редактируйте, Открывайте, Сохраняйте.]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Владелец © FredHappyface.</string>
     <string name="dialog_new_confirm">Да</string>
     <string name="action_open">Открыть</string>

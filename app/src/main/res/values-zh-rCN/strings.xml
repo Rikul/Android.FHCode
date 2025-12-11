@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">黑色</string>
     <string name="links_text">- 项目：https://github.com/FredHappyface/Android.FHCode
 \n- 许可证：https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[这是一个空文件，打开文件，或者编辑文件并保存]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">版权所有 © FredHappyface</string>
     <string name="dialog_new_confirm">是</string>
     <string name="action_open">打开</string>

@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">검정 화면</string>
     <string name="links_text">- 프로젝트: https://github.com/FredHappyface/Android.FHCode
 \n- 라이센스: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[이 파일은 빈 파일입니다. 파일을 열거나 이 파일을 편집하여 저장합니다]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Copyright © FredHappyface</string>
     <string name="dialog_new_confirm">네</string>
     <string name="action_open">열기</string>

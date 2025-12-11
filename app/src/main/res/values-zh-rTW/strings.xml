@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">黑人</string>
     <string name="links_text">- 项目:https://github.com/FredHappyface/Android.FHCode
 \n- License: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[这是一个空白档案,开立档案或编辑档案和储蓄]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">版权 ©</string>
     <string name="dialog_new_confirm">否</string>
     <string name="action_open">开放</string>

@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">ブラック</string>
     <string name="links_text">- プロジェクト: https://github.com/FredHappyface/Android.FHCode
 \n- ライセンス: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[これは空ファイルです。既存ファイルを開くか、このファイルを編集して保存してください。]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Copyright © FredHappyface</string>
     <string name="dialog_new_confirm">はい</string>
     <string name="action_open">開く</string>

@@ -12,7 +12,7 @@
     <string name="settings_theme_radio3">أسود</string>
     <string name="links_text">المشروع: https://github.com/FredHappyface/ Android.FHCode
 \n- License: https://github.com/FredHappyface/ Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[هذا ملف فارغ، فتح ملف أو تحرير هذا الملف وإنقاذ]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">حقوق التأليف والنشر</string>
     <string name="dialog_new_confirm">نعم</string>
     <string name="action_open">مفتوح</string>

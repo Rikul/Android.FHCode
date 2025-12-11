@@ -43,7 +43,7 @@
 	<string name="dialog_new_cancel">Não</string>
 	<string name="dialog_new_title">Criar novo arquivo?</string>
 	<!-- Blank file text  -->
-	<string name="blank_file_text">[Este é um arquivo vazio, você pode abrir um outro arquivo ou editar este aqui e salvar]</string>
+	<string name="blank_file_text"></string>
 	<!-- Strings for shortcuts.xml -->
 	<string name="shortcut_about">Sobre</string>
 	<string name="shortcut_settings">Configurações</string>

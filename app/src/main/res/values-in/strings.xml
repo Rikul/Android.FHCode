@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">Login</string>
     <string name="links_text">- Proyek: https://github.com/FredHappyface/Android.FHCode
 \n- Lisensi: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[Ini adalah file kosong, buka file atau edit file ini dan simpan]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Sitemap _ FredHappyface</string>
     <string name="dialog_new_confirm">Login</string>
     <string name="action_open">Login</string>

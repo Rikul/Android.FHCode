@@ -48,7 +48,7 @@
 	<string name="dialog_unsaved_confirm">Discard</string>
 	<string name="dialog_unsaved_cancel">Cancel</string>
 	<!-- Blank file text  -->
-	<string name="blank_file_text">[This is a blank file, open a file or edit this file and save]</string>
+	<string name="blank_file_text"></string>
 	<!-- Strings for shortcuts.xml -->
 	<string name="shortcut_about">About</string>
 	<string name="shortcut_settings">Settings</string>

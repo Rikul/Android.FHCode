@@ -14,7 +14,7 @@
     <string name="settings_theme_radio3">Negro</string>
     <string name="links_text">- Proyecto: https://github.com/FredHappyface/Android.FHCode
 \n- Licencia: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[Este es un archivo en blanco, abre un archivo o edita este archivo y guárdalo]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Copyright © FredHappyface</string>
     <string name="dialog_new_confirm">Sí</string>
     <string name="action_open">Abrir</string>

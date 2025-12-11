@@ -13,7 +13,7 @@
     <string name="settings_theme_radio3">काली</string>
     <string name="links_text">- परियोजना: https://github.com/FredHappyface/Android.FHCode
 \n- लाइसेंस: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[यह एक रिक्त फ़ाइल है, एक फ़ाइल खोलें या इस फ़ाइल को संपादित करें और सहेजें]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">कॉपीराइट © फ्रेडहैप्पीफेस</string>
     <string name="dialog_new_confirm">हाँ</string>
     <string name="action_open">खोलें</string>

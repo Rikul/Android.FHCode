@@ -13,7 +13,7 @@
     <string name="settings_theme_radio3">Schwarz</string>
     <string name="links_text">- Projekt: https://github.com/FredHappyface/Android.FHCode
 \n- Lizenz: https://github.com/FredHappyface/Android.FHCode/blob/main/LICENSE.md</string>
-    <string name="blank_file_text">[Dies ist eine leere Datei, öffnen Sie eine Datei oder bearbeiten Sie diese Datei und speichern Sie sie]</string>
+    <string name="blank_file_text"></string>
     <string name="license_text">Copyright © FredHappyface</string>
     <string name="dialog_new_confirm">Ja</string>
     <string name="action_open">Öffnen</string>
