@@ -287,16 +287,12 @@ class ActivityMain : ActivityThemable() {
 	 */
 	private fun getFilenameFromURI(uri: Uri?): String? {
 		if (uri != null) {
-			val cursor = contentResolver.query(uri, null, null, null, null)
-			if (cursor != null) {
+			contentResolver.query(uri, null, null, null, null)?.use { cursor ->
 				cursor.moveToFirst()
 				val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
 				if (nameIndex >= 0) {
-					val name = cursor.getString(nameIndex)
-					cursor.close()
-					return name
+					return cursor.getString(nameIndex)
 				}
-				cursor.close()
 			}
 		}
 		return null
@@ -605,6 +601,7 @@ class ActivityMain : ActivityThemable() {
 				val parsedUri = Uri.parse(this.uri)
 				this.languageID = getExtFromURI(parsedUri)
 				this.filename = getFilenameFromURI(parsedUri)
+				updateTitle()
 				writeTextToUri(parsedUri)
 				showDialogMessageSave()
 			}
