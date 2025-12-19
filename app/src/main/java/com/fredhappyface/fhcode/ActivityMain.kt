@@ -207,8 +207,12 @@ class ActivityMain : ActivityThemable() {
 				insertTab(); true
 			}
 
-			R.id.action_comma -> {
-				insertComma(); true
+			R.id.action_left_brace -> {
+				insertLeftBrace(); true
+			}
+
+			R.id.action_right_brace -> {
+				insertRightBrace(); true
 			}
 
 			R.id.action_new_file -> {
@@ -408,13 +412,23 @@ class ActivityMain : ActivityThemable() {
 	}
 
 	/**
-	 * Insert a comma at the current cursor position
+	 * Insert a left curly brace at the current cursor position
 	 */
-	private fun insertComma() {
+	private fun insertLeftBrace() {
 		val codeEditText: EditText = findViewById(R.id.codeHighlight)
 		val cursorPosition = codeEditText.selectionStart
 		val text = codeEditText.text
-		text.insert(cursorPosition, ",")
+		text.insert(cursorPosition, "{")
+	}
+
+	/**
+	 * Insert a right curly brace at the current cursor position
+	 */
+	private fun insertRightBrace() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val cursorPosition = codeEditText.selectionStart
+		val text = codeEditText.text
+		text.insert(cursorPosition, "}")
 	}
 
 

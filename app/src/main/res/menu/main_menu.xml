@@ -21,10 +21,16 @@
 		android:title="Tab"
 		app:showAsAction="always" />
 	<item
-		android:id="@+id/action_comma"
-		android:icon="@drawable/ic_comma"
+		android:id="@+id/action_left_brace"
+		android:icon="@drawable/ic_left_brace"
 		android:orderInCategory="4"
-		android:title="Comma"
+		android:title="Left Brace"
+		app:showAsAction="always" />
+	<item
+		android:id="@+id/action_right_brace"
+		android:icon="@drawable/ic_right_brace"
+		android:orderInCategory="5"
+		android:title="Right Brace"
 		app:showAsAction="always" />
 	<!-- Overflow menu items -->
 	<item
