@@ -57,6 +57,10 @@ class ActivityMain : ActivityThemable() {
 	private var languageID = "java"
 	private var isModified = false
 	private var textWatcher: TextWatcher? = null
+	private var filename: String? = null
+	private val undoStack = mutableListOf<String>()
+	private val redoStack = mutableListOf<String>()
+	private var isUndoRedoOperation = false
 
 	/**
 	 * Override the onCreate method from ActivityThemable adding the activity_main view and configuring
@@ -72,9 +76,12 @@ class ActivityMain : ActivityThemable() {
 		this.uri = savedInstanceState?.getString("_uri", null)
 		this.languageID = savedInstanceState?.getString("_languageID", "java").toString()
 		this.isModified = savedInstanceState?.getBoolean("_isModified", false) ?: false
+		this.filename = savedInstanceState?.getString("_filename", null)
 		if (this.isModified) {
 			findViewById<TextView>(R.id.statusModified).text = "Modified"
 		}
+		// Update title with filename or "untitled"
+		updateTitle()
 		// Set up correct colour
 		var colours: Colours = ColoursDark()
 		if (this.currentTheme == 0) {
@@ -133,11 +140,28 @@ class ActivityMain : ActivityThemable() {
 		val codeEditText: EditText = findViewById(R.id.codeHighlight)
 		if (textWatcher == null) {
 			textWatcher = object : TextWatcher {
+				private var beforeText = ""
+				
 				override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                     updateCursorPosition()
+					if (!isUndoRedoOperation) {
+						beforeText = s.toString()
+					}
                 }
 				override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 				override fun afterTextChanged(s: Editable?) {
+					if (!isUndoRedoOperation) {
+						// Save state for undo
+						if (beforeText != s.toString()) {
+							undoStack.add(beforeText)
+							// Limit stack size to prevent memory issues
+							if (undoStack.size > 100) {
+								undoStack.removeAt(0)
+							}
+							// Clear redo stack when new edit is made
+							redoStack.clear()
+						}
+					}
 					isModified = true
 					findViewById<TextView>(R.id.statusModified).text = "Modified"
 					updateCursorPosition()
@@ -171,6 +195,26 @@ class ActivityMain : ActivityThemable() {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		// Handle item selection
 		return when (item.itemId) {
+			R.id.action_undo -> {
+				doUndo(); true
+			}
+
+			R.id.action_redo -> {
+				doRedo(); true
+			}
+
+			R.id.action_tab -> {
+				insertTab(); true
+			}
+
+			R.id.action_left_brace -> {
+				insertLeftBrace(); true
+			}
+
+			R.id.action_right_brace -> {
+				insertRightBrace(); true
+			}
+
 			R.id.action_new_file -> {
 				doNewFile(); true
 			}
@@ -213,6 +257,7 @@ class ActivityMain : ActivityThemable() {
 		outState.putString("_languageID", this.languageID)
 		outState.putString("_uri", this.uri)
 		outState.putBoolean("_isModified", this.isModified)
+		outState.putString("_filename", this.filename)
 	}
 
 	/**
@@ -236,6 +281,32 @@ class ActivityMain : ActivityThemable() {
 			).toString()
 		}
 		return "java"
+	}
+
+	/**
+	 * Get the filename from a URI
+	 *
+	 * @param uri
+	 * @return String filename or null
+	 */
+	private fun getFilenameFromURI(uri: Uri?): String? {
+		if (uri != null) {
+			contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+				cursor.moveToFirst()
+				val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+				if (nameIndex >= 0) {
+					return cursor.getString(nameIndex)
+				}
+			}
+		}
+		return null
+	}
+
+	/**
+	 * Update the action bar title with the current filename
+	 */
+	private fun updateTitle() {
+		supportActionBar?.title = filename ?: "untitled"
 	}
 
 	/**
@@ -292,6 +363,72 @@ class ActivityMain : ActivityThemable() {
 		}
 		alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { dialog, _ -> dialog.dismiss() }
 		alertDialog.show()
+	}
+
+	/**
+	 * Undo the last text change
+	 */
+	private fun doUndo() {
+		if (undoStack.isNotEmpty()) {
+			val codeEditText: EditText = findViewById(R.id.codeHighlight)
+			val currentText = codeEditText.text.toString()
+			val previousText = undoStack.removeAt(undoStack.size - 1)
+			
+			redoStack.add(currentText)
+			
+			isUndoRedoOperation = true
+			codeEditText.setText(previousText)
+			codeEditText.setSelection(codeEditText.text.length)
+			isUndoRedoOperation = false
+		}
+	}
+
+	/**
+	 * Redo the last undone text change
+	 */
+	private fun doRedo() {
+		if (redoStack.isNotEmpty()) {
+			val codeEditText: EditText = findViewById(R.id.codeHighlight)
+			val currentText = codeEditText.text.toString()
+			val nextText = redoStack.removeAt(redoStack.size - 1)
+			
+			undoStack.add(currentText)
+			
+			isUndoRedoOperation = true
+			codeEditText.setText(nextText)
+			codeEditText.setSelection(codeEditText.text.length)
+			isUndoRedoOperation = false
+		}
+	}
+
+	/**
+	 * Insert a tab character at the current cursor position
+	 */
+	private fun insertTab() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val cursorPosition = codeEditText.selectionStart
+		val text = codeEditText.text
+		text.insert(cursorPosition, "\t")
+	}
+
+	/**
+	 * Insert a left curly brace at the current cursor position
+	 */
+	private fun insertLeftBrace() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val cursorPosition = codeEditText.selectionStart
+		val text = codeEditText.text
+		text.insert(cursorPosition, "{")
+	}
+
+	/**
+	 * Insert a right curly brace at the current cursor position
+	 */
+	private fun insertRightBrace() {
+		val codeEditText: EditText = findViewById(R.id.codeHighlight)
+		val cursorPosition = codeEditText.selectionStart
+		val text = codeEditText.text
+		text.insert(cursorPosition, "}")
 	}
 
 
@@ -360,7 +497,10 @@ class ActivityMain : ActivityThemable() {
 			codeEditText.setText(R.string.blank_file_text)
 			this.languageID = "java"
 			this.uri = null
+			this.filename = null
 			this.isModified = false
+			this.undoStack.clear()
+			this.redoStack.clear()
 			recreate()
 		}
 
@@ -416,10 +556,14 @@ class ActivityMain : ActivityThemable() {
 		registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 			if (result.resultCode == Activity.RESULT_OK) {
 				this.uri = result.data?.data.toString()
-				this.languageID = getExtFromURI(Uri.parse(this.uri))
+				val parsedUri = Uri.parse(this.uri)
+				this.languageID = getExtFromURI(parsedUri)
+				this.filename = getFilenameFromURI(parsedUri)
 				val codeEditText: EditText = findViewById(R.id.codeHighlight)
-				codeEditText.setText(readTextFromUri(Uri.parse(this.uri)))
+				codeEditText.setText(readTextFromUri(parsedUri))
 				this.isModified = false
+				this.undoStack.clear()
+				this.redoStack.clear()
 				recreate()
 			}
 		}
@@ -468,8 +612,11 @@ class ActivityMain : ActivityThemable() {
 		registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 			if (result.resultCode == Activity.RESULT_OK) {
 				this.uri = result.data?.data.toString()
-				this.languageID = getExtFromURI(Uri.parse(this.uri))
-				writeTextToUri(Uri.parse(this.uri))
+				val parsedUri = Uri.parse(this.uri)
+				this.languageID = getExtFromURI(parsedUri)
+				this.filename = getFilenameFromURI(parsedUri)
+				updateTitle()
+				writeTextToUri(parsedUri)
 				showDialogMessageSave()
 			}
 		}

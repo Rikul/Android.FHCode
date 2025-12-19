@@ -1,0 +1,10 @@
+<!-- Icon for Left Curly Brace { -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M6,6c0,-1.1 0.9,-2 2,-2h2v2H8v3.5C8,10.9 7.1,12 6,12c1.1,0 2,1.1 2,2.5V18h2v2H8c-1.1,0 -2,-0.9 -2,-2V6z"/>
+</vector>
